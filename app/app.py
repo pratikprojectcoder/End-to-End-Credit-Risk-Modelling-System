@@ -24,7 +24,6 @@ from preprocess import MODELS_DIR
 
 st.set_page_config(
     page_title="Credit Risk Dashboard",
-    page_icon="🏦",
     layout="wide",
 )
 
@@ -73,7 +72,7 @@ feature_columns = encoders.get(
 # TITLE
 # =========================================================
 
-st.title("🏦 Credit Risk Prediction Dashboard")
+st.title("Credit Risk Prediction Dashboard")
 
 st.markdown(
     """
@@ -90,7 +89,7 @@ AI-powered credit default prediction platform for:
 # KPI SECTION
 # =========================================================
 
-st.markdown("## 📌 Model Performance")
+st.markdown("## Model Performance")
 
 kpi1, kpi2, kpi3, kpi4 = st.columns(4)
 
@@ -120,7 +119,7 @@ st.markdown("---")
 # SIDEBAR
 # =========================================================
 
-st.sidebar.title("📂 Navigation")
+st.sidebar.title("Navigation")
 
 page = st.sidebar.radio(
     "Select Module",
@@ -137,7 +136,7 @@ page = st.sidebar.radio(
 
 if page == "Customer Risk Prediction":
 
-    st.header("📊 Customer Credit Risk Assessment")
+    st.header("Customer Credit Risk Assessment")
 
     col1, col2 = st.columns([1, 1])
 
@@ -147,7 +146,7 @@ if page == "Customer Risk Prediction":
 
     with col1:
 
-        st.subheader("🧾 Customer Information")
+        st.subheader("Customer Information")
 
         loan_amnt = st.number_input(
             "Loan Amount",
@@ -206,7 +205,7 @@ if page == "Customer Risk Prediction":
         )
 
         predict_button = st.button(
-            "🔍 Analyze Credit Risk"
+            "Analyze Credit Risk"
         )
 
     # =====================================================
@@ -267,17 +266,14 @@ if page == "Customer Risk Prediction":
             if prediction_percent < 30:
 
                 risk_label = "LOW RISK"
-                risk_color = "🟢"
 
             elif prediction_percent < 70:
 
                 risk_label = "MEDIUM RISK"
-                risk_color = "🟠"
 
             else:
 
                 risk_label = "HIGH RISK"
-                risk_color = "🔴"
 
             # =============================================
             # RESULTS PANEL
@@ -286,7 +282,7 @@ if page == "Customer Risk Prediction":
             with col2:
 
                 st.subheader(
-                    "📈 Risk Assessment Results"
+                    "Risk Assessment Results"
                 )
 
                 m1, m2, m3 = st.columns(3)
@@ -311,19 +307,19 @@ if page == "Customer Risk Prediction":
                 if risk_label == "LOW RISK":
 
                     st.success(
-                        f"{risk_color} LOW CREDIT RISK"
+                        "LOW CREDIT RISK"
                     )
 
                 elif risk_label == "MEDIUM RISK":
 
                     st.warning(
-                        f"{risk_color} MODERATE CREDIT RISK"
+                        "MODERATE CREDIT RISK"
                     )
 
                 else:
 
                     st.error(
-                        f"{risk_color} HIGH CREDIT RISK"
+                        "HIGH CREDIT RISK"
                     )
 
                 # =========================================
@@ -331,7 +327,7 @@ if page == "Customer Risk Prediction":
                 # =========================================
 
                 st.markdown(
-                    "### 📊 Default Risk Level"
+                    "### Default Risk Level"
                 )
 
                 st.progress(
@@ -350,7 +346,7 @@ if page == "Customer Risk Prediction":
                 # =========================================
 
                 st.subheader(
-                    "📌 Key Risk Drivers"
+                    "Key Risk Drivers"
                 )
 
                 importances = getattr(
@@ -397,7 +393,7 @@ if page == "Customer Risk Prediction":
                 st.markdown("---")
 
                 st.subheader(
-                    "📌 Risk Insights"
+                    "Risk Insights"
                 )
 
                 st.info(
@@ -420,7 +416,7 @@ delinquencies increase credit risk.
 
 elif page == "Portfolio Risk Analysis":
 
-    st.header("📑 Portfolio Risk Analysis")
+    st.header("Portfolio Risk Analysis")
 
     st.markdown(
         """
@@ -462,7 +458,7 @@ customer credit distribution.
 
     st.markdown("---")
 
-    st.subheader("📌 Portfolio Summary")
+    st.subheader("Portfolio Summary")
 
     c1, c2, c3 = st.columns(3)
 
@@ -487,7 +483,7 @@ customer credit distribution.
 
 elif page == "Model Insights":
 
-    st.header("🧠 Model Insights")
+    st.header("Model Insights")
 
     st.markdown(
         """

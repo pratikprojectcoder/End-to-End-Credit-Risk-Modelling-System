@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Credit Risk Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand">
+        <div>
+          <h1>Credit Risk Dashboard</h1>
+          <p>FastAPI-powered real-time inference — cut manual risk review time in half</p>
+        </div>
+      </div>
+      <div class="status-pill" id="apiStatus">
+        <span class="dot"></span>
+        <span>Connecting…</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="kpi-row" id="kpiRow">
+    <div class="kpi-card"><span class="kpi-label">Accuracy</span><span class="kpi-value" id="kpiAccuracy">—</span></div>
+    <div class="kpi-card"><span class="kpi-label">ROC-AUC</span><span class="kpi-value" id="kpiAuc">—</span></div>
+    <div class="kpi-card"><span class="kpi-label">Precision</span><span class="kpi-value" id="kpiPrecision">—</span></div>
+    <div class="kpi-card"><span class="kpi-label">Predictions Served</span><span class="kpi-value" id="kpiServed">0</span></div>
+  </section>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="assess">Live Assessment</button>
+    <button class="tab" data-tab="batch">Batch Scoring</button>
+    <button class="tab" data-tab="portfolio">Portfolio</button>
+    <button class="tab" data-tab="insights">Model Insights</button>
+  </nav>
+
+  <main>
+    <!-- Live Assessment -->
+    <section class="panel active" id="panel-assess">
+      <div class="grid-2">
+        <div class="card">
+          <h2>Customer Information</h2>
+          <p class="hint">Adjust any field — risk score updates instantly via WebSocket</p>
+
+          <label>Loan Amount ($)
+            <input type="range" id="loan_amnt" min="1000" max="100000" step="500" value="15000" />
+            <output id="loan_amnt_val">$15,000</output>
+          </label>
+
+          <label>Annual Income ($)
+            <input type="range" id="annual_inc" min="10000" max="500000" step="1000" value="50000" />
+            <output id="annual_inc_val">$50,000</output>
+          </label>
+
+          <label>Debt-to-Income Ratio (%)
+            <input type="range" id="dti" min="0" max="50" step="0.5" value="15" />
+            <output id="dti_val">15%</output>
+          </label>
+
+          <label>Credit Score (FICO)
+            <input type="range" id="fico_range_low" min="300" max="850" step="1" value="700" />
+            <output id="fico_range_low_val">700</output>
+          </label>
+
+          <label>Revolving Balance ($)
+            <input type="range" id="revol_bal" min="0" max="100000" step="500" value="10000" />
+            <output id="revol_bal_val">$10,000</output>
+          </label>
+
+          <label>Monthly Installment ($)
+            <input type="range" id="installment" min="0" max="5000" step="25" value="400" />
+            <output id="installment_val">$400</output>
+          </label>
+
+          <label>Past Delinquencies (2 yrs)
+            <input type="range" id="delinq_2yrs" min="0" max="20" step="1" value="0" />
+            <output id="delinq_2yrs_val">0</output>
+          </label>
+
+          <label>Public Records
+            <input type="range" id="pub_rec" min="0" max="10" step="1" value="0" />
+            <output id="pub_rec_val">0</output>
+          </label>
+        </div>
+
+        <div class="card result-card">
+          <h2>Risk Assessment</h2>
+          <div class="risk-gauge">
+            <div class="gauge-ring" id="gaugeRing">
+              <div class="gauge-inner">
+                <span class="gauge-pct" id="riskPct">—</span>
+                <span class="gauge-label">Default Probability</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="risk-badge" id="riskBadge">Awaiting input…</div>
+          <p class="recommendation" id="recommendation">Move sliders to see live inference.</p>
+
+          <div class="meta-row">
+            <span>Latency: <strong id="latency">—</strong></span>
+            <span>Transport: <strong id="transport">WebSocket</strong></span>
+          </div>
+
+          <button class="btn primary" id="saveToPortfolio">Add to Portfolio Session</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Batch Scoring -->
+    <section class="panel" id="panel-batch">
+      <div class="card">
+        <h2>Batch Credit Scoring</h2>
+        <p class="hint">Upload a CSV with the same columns, or paste JSON array of applications.</p>
+
+        <div class="batch-actions">
+          <input type="file" id="csvFile" accept=".csv" />
+          <button class="btn primary" id="runBatch">Score Batch via API</button>
+        </div>
+
+        <textarea id="batchJson" rows="8" placeholder='[{"loan_amnt":15000,"annual_inc":50000,"dti":15,"fico_range_low":700,"revol_bal":10000,"installment":400,"delinq_2yrs":0,"pub_rec":0}]'></textarea>
+
+        <div id="batchResults" class="batch-results hidden">
+          <h3>Results</h3>
+          <div class="batch-summary" id="batchSummary"></div>
+          <div class="table-wrap">
+            <table id="batchTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Default Prob.</th>
+                  <th>Risk</th>
+                  <th>Recommendation</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Portfolio -->
+    <section class="panel" id="panel-portfolio">
+      <div class="grid-2">
+        <div class="card">
+          <h2>Session Portfolio</h2>
+          <p class="hint">Applications scored during this session — replaces manual spreadsheet triage.</p>
+          <div class="portfolio-stats" id="portfolioStats">
+            <div class="stat"><span>Total</span><strong id="pfTotal">0</strong></div>
+            <div class="stat low"><span>Low Risk</span><strong id="pfLow">0</strong></div>
+            <div class="stat medium"><span>Medium</span><strong id="pfMedium">0</strong></div>
+            <div class="stat high"><span>High Risk</span><strong id="pfHigh">0</strong></div>
+          </div>
+          <button class="btn ghost" id="clearPortfolio">Clear Session</button>
+        </div>
+        <div class="card">
+          <h2>Risk Distribution</h2>
+          <canvas id="portfolioChart" height="220"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Model Insights -->
+    <section class="panel" id="panel-insights">
+      <div class="grid-2">
+        <div class="card">
+          <h2>Feature Importance</h2>
+          <canvas id="importanceChart" height="280"></canvas>
+        </div>
+        <div class="card">
+          <h2>Model Details</h2>
+          <dl class="model-dl" id="modelDetails"></dl>
+          <div class="efficiency-banner">
+            <strong>50% faster reviews</strong>
+            <p>Automated scoring, instant risk tiers, and batch triage replace repetitive manual underwriting checks.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    End-to-End Credit Risk Modeling System · FastAPI + XGBoost · Real-time inference
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

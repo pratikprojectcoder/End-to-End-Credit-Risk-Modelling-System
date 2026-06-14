@@ -34,6 +34,13 @@ def main() -> None:
 
     sub.add_parser("explain", help="Print top feature importances")
 
+    sub.add_parser("seed", help="Create demo model artifacts for API/dashboard")
+
+    p_serve = sub.add_parser("serve", help="Start FastAPI server with real-time dashboard")
+    p_serve.add_argument("--host", default="127.0.0.1")
+    p_serve.add_argument("--port", type=int, default=8000)
+    p_serve.add_argument("--reload", action="store_true", help="Enable auto-reload (dev)")
+
     args = parser.parse_args()
 
     if args.command == "train":
@@ -49,6 +56,19 @@ def main() -> None:
 
         for name, score in list(feature_importance().items())[:25]:
             print(f"{name}: {score:.6f}")
+    elif args.command == "seed":
+        from seed_models import seed_demo_models
+
+        seed_demo_models(force=True)
+    elif args.command == "serve":
+        import uvicorn
+
+        uvicorn.run(
+            "api.main:app",
+            host=args.host,
+            port=args.port,
+            reload=args.reload,
+        )
 
 
 if __name__ == "__main__":

@@ -11,3 +11,6 @@ imbalanced-learn
 scorecardpy
 joblib
 pyarrow
+fastapi
+uvicorn[standard]
+pydantic
